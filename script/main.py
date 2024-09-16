@@ -3,6 +3,7 @@ import cv2
 import numpy as np
 import threading
 import time 
+
 cap = cv2.VideoCapture(0)
 mp_drawing = mp.solutions.drawing_utils
 mp_pose = mp.solutions.pose
@@ -12,6 +13,7 @@ def count_up():
     pre_positions=combine()
     positions=pre_positions
     status="UP"
+    time.sleep(1)
     def pos_diff():
         return pre_positions[1]-positions[1]
     while not stop_thread:
@@ -61,7 +63,7 @@ with mp_pose.Pose(min_detection_confidence=0.5, min_tracking_confidence=0.5) as 
         # Recolor back to BGR
         image.flags.writeable = True
         image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
-        
+        image=cv2.resize(image,(0,0),fx=1.5,fy=1.5)
         # Extract landmarks
         try:
             landmarks = results.pose_landmarks.landmark
@@ -105,36 +107,36 @@ with mp_pose.Pose(min_detection_confidence=0.5, min_tracking_confidence=0.5) as 
             if  left_elbow_angle<=150:
                 cv2.putText(image,"don't bend your left elbow",
                             tuple(np.multiply((0,0.5), [640,480]).astype(int)),
-                            cv2.FONT_HERSHEY_SIMPLEX,0.7,(0,0,255), 2, cv2.LINE_AA
+                            cv2.FONT_HERSHEY_SIMPLEX,0.8,(0,0,255), 2, cv2.LINE_AA
                             )
             if  left_knee_angle<=40:
                 cv2.putText(image,"Move forward",
                             tuple(np.multiply((0,0.7), [640,480]).astype(int)),
-                            cv2.FONT_HERSHEY_SIMPLEX,0.7,(0,0,255), 2, cv2.LINE_AA
+                            cv2.FONT_HERSHEY_SIMPLEX,0.8,(0,0,255), 2, cv2.LINE_AA
                             )   
             if left_knee_angle>=70:
                             cv2.putText(image,"Move backward",
                             tuple(np.multiply((0,0.7), [640,480]).astype(int)),
-                            cv2.FONT_HERSHEY_SIMPLEX,0.7,(0,0,255), 2, cv2.LINE_AA
+                            cv2.FONT_HERSHEY_SIMPLEX,0.8,(0,0,255), 2, cv2.LINE_AA
                             )   
             if  right_elbow_angle<=150:
                 cv2.putText(image,"don't bend your right elbow",
                             tuple(np.multiply((0.7,0.5), [640,480]).astype(int)),
-                            cv2.FONT_HERSHEY_SIMPLEX,0.7,(0,0,255), 2, cv2.LINE_AA
+                            cv2.FONT_HERSHEY_SIMPLEX,0.8,(0,0,255), 2, cv2.LINE_AA
                             )
             if  right_knee_angle<=40:
                 cv2.putText(image,"Move forward",
                             tuple(np.multiply((0.7,0.7), [640,480]).astype(int)),
-                            cv2.FONT_HERSHEY_SIMPLEX,0.7,(0,0,255), 2, cv2.LINE_AA
+                            cv2.FONT_HERSHEY_SIMPLEX,0.8,(0,0,255), 2, cv2.LINE_AA
                             )   
             if right_knee_angle>70:
                             cv2.putText(image,"Move backward",
                             tuple(np.multiply((0.7,0.7), [640,480]).astype(int)),
-                            cv2.FONT_HERSHEY_SIMPLEX,0.7,(0,0,255), 2, cv2.LINE_AA
+                            cv2.FONT_HERSHEY_SIMPLEX,0.8,(0,0,255), 2, cv2.LINE_AA
                             )
             cv2.putText(image,"count "+str(count),
                             tuple(np.multiply((0.8,0.2), [640,480]).astype(int)),
-                            cv2.FONT_HERSHEY_SIMPLEX,0.7,(0,0,255), 2, cv2.LINE_AA
+                            cv2.FONT_HERSHEY_SIMPLEX,0.8,(0,0,255), 2, cv2.LINE_AA
                             )   
             
             
