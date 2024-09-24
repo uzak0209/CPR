@@ -3,11 +3,40 @@ import cv2
 import numpy as np
 import threading
 import time 
-
+import pygame
+import os
+mode=True
 cap = cv2.VideoCapture(0)
 mp_drawing = mp.solutions.drawing_utils
 mp_pose = mp.solutions.pose
+sound_playing=False
+def play_sound(sound_file):
+    global sound_playing
+    if sound_playing:
+        print("Sound already playing, skipping...")
+        return
 
+    try:
+        pygame.mixer.init()
+        if not os.path.exists(sound_file):
+            print(f"Error: Sound file not found at {sound_file}")
+            return
+
+        pygame.mixer.music.load(sound_file)
+        pygame.mixer.music.play()
+
+        sound_playing = True
+
+        while pygame.mixer.music.get_busy():
+            pygame.time.Clock().tick(10)
+
+        sound_playing = False
+    except Exception as e:
+        print(f"An error occurred in play_sound: {str(e)}")
+        sound_playing = False
+
+# サウンドファイルを指定して関数を呼び出す
+play_sound("path_to_your_sound_file.wav")
 ##this is thread for count
 def count_up():
     pre_positions=combine()
@@ -49,6 +78,7 @@ right_wrist=[0,0]
 count = 0
 bg_thread = threading.Thread(target=count_up)
 bg_thread.start()
+
 with mp_pose.Pose(min_detection_confidence=0.5, min_tracking_confidence=0.5) as pose:
     while cap.isOpened():
         ret, frame = cap.read()
@@ -67,7 +97,6 @@ with mp_pose.Pose(min_detection_confidence=0.5, min_tracking_confidence=0.5) as 
         # Extract landmarks
         try:
             landmarks = results.pose_landmarks.landmark
-            
             # Get coordinates
             left_shoulder = [landmarks[mp_pose.PoseLandmark.LEFT_SHOULDER.value].x,landmarks[mp_pose.PoseLandmark.LEFT_SHOULDER.value].y]
             left_elbow = [landmarks[mp_pose.PoseLandmark.LEFT_ELBOW.value].x,landmarks[mp_pose.PoseLandmark.LEFT_ELBOW.value].y]
@@ -104,36 +133,70 @@ with mp_pose.Pose(min_detection_confidence=0.5, min_tracking_confidence=0.5) as 
                            tuple(np.multiply(left_knee, [640, 480]).astype(int)), 
                            cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 255, 255), 2, cv2.LINE_AA
                                 )
+
             if  left_elbow_angle<=150:
                 cv2.putText(image,"don't bend your left elbow",
                             tuple(np.multiply((0,0.5), [640,480]).astype(int)),
                             cv2.FONT_HERSHEY_SIMPLEX,0.8,(0,0,255), 2, cv2.LINE_AA
                             )
+                if mode:
+                    soundfile=".\\audio\\straightenelbow.mp3"
+                else:
+                    soundfile=".\\audio\\hizimagenai.mp3"
+                if not sound_playing:
+                    sound_thread = threading.Thread(target=play_sound, args=(soundfile,))
+                    sound_thread.start()
+            
             if  left_knee_angle<=40:
                 cv2.putText(image,"Move forward",
                             tuple(np.multiply((0,0.7), [640,480]).astype(int)),
                             cv2.FONT_HERSHEY_SIMPLEX,0.8,(0,0,255), 2, cv2.LINE_AA
-                            )   
-            if left_knee_angle>=70:
-                            cv2.putText(image,"Move backward",
-                            tuple(np.multiply((0,0.7), [640,480]).astype(int)),
-                            cv2.FONT_HERSHEY_SIMPLEX,0.8,(0,0,255), 2, cv2.LINE_AA
-                            )   
+                            )
+                
+                if mode:
+                    soundfile=".\\audio\\moveforward.mp3"
+                else:
+                    soundfile=".\\audio\\zyusinusiro.mp3"
+                if not sound_playing:
+                    sound_thread = threading.Thread(target=play_sound, args=(soundfile,))
+                    sound_thread.start()
+            
             if  right_elbow_angle<=150:
                 cv2.putText(image,"don't bend your right elbow",
                             tuple(np.multiply((0.7,0.5), [640,480]).astype(int)),
                             cv2.FONT_HERSHEY_SIMPLEX,0.8,(0,0,255), 2, cv2.LINE_AA
                             )
+                if mode:
+                    soundfile=".\\audio\\straightenelbow.mp3"
+                else:
+                    soundfile=".\\audio\\hizimagenai.mp3"
+                if not sound_playing:
+                    sound_thread = threading.Thread(target=play_sound, args=(soundfile,))
+                    sound_thread.start()
             if  right_knee_angle<=40:
                 cv2.putText(image,"Move forward",
                             tuple(np.multiply((0.7,0.7), [640,480]).astype(int)),
                             cv2.FONT_HERSHEY_SIMPLEX,0.8,(0,0,255), 2, cv2.LINE_AA
                             )   
+                if mode:
+                    soundfile=".\\audio\\moveforward.mp3"
+                else:
+                    soundfile=".\\audio\\zyusinusiro.mp3"
+                if not sound_playing:
+                    sound_thread = threading.Thread(target=play_sound, args=(soundfile,))
+                    sound_thread.start()
             if right_knee_angle>70:
                             cv2.putText(image,"Move backward",
                             tuple(np.multiply((0.7,0.7), [640,480]).astype(int)),
                             cv2.FONT_HERSHEY_SIMPLEX,0.8,(0,0,255), 2, cv2.LINE_AA
                             )
+                            if mode:
+                                soundfile=".\\audio\\movebackward.mp3"
+                            else:
+                                soundfile=".\\audio\\zyusinusiro.mp3"
+                            if not sound_playing:
+                                sound_thread = threading.Thread(target=play_sound, args=(soundfile,))
+                                sound_thread.start()
             cv2.putText(image,"count "+str(count),
                             tuple(np.multiply((0.8,0.2), [640,480]).astype(int)),
                             cv2.FONT_HERSHEY_SIMPLEX,0.8,(0,0,255), 2, cv2.LINE_AA
@@ -158,6 +221,10 @@ with mp_pose.Pose(min_detection_confidence=0.5, min_tracking_confidence=0.5) as 
             break
         elif key == ord('s'):
             count=0
+        elif key==ord("j"):
+            mode=False
+        elif key==ord("e"):
+            mode=True
 
 
     cap.release()
